@@ -1,1106 +1,179 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>どっか</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文化祭フォトフレーム</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=DM+Mono:wght@400;500&display=swap');
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  /* ── Themes ── */
-  :root {
-    --bg: #f5f0e8;
-    --border: #c8bfa8;
-    --text: #1a1710;
-    --muted: #8c826e;
-    --accent: #1a1710;
-    --highlight: #d4410a;
-    --surface: rgba(180,160,120,0.06);
-  }
-
-  body.theme-white {
-    --bg: #ffffff;
-    --border: #e0e0e0;
-    --text: #111111;
-    --muted: #999999;
-    --accent: #111111;
-    --highlight: #d4410a;
-    --surface: rgba(0,0,0,0.02);
-  }
-
-  body.theme-gray {
-    --bg: #2a2a2a;
-    --border: #444444;
-    --text: #eeeeee;
-    --muted: #888888;
-    --accent: #eeeeee;
-    --highlight: #ff6b3d;
-    --surface: rgba(255,255,255,0.03);
-  }
-
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Serif JP', serif;
-    overflow: hidden;
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-
-  body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-  }
-
-  .app {
-    width: 100%;
-    max-width: 390px;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* ── Tab bar ── */
-  .tab-bar {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    padding-top: env(safe-area-inset-top, 44px);
-    background: var(--bg);
-    position: relative;
-    z-index: 10;
-    transition: background 0.3s, border-color 0.3s;
-  }
-
-  .tab-btn {
-    flex: 1;
-    padding: 14px 0;
-    background: none;
-    border: none;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    color: var(--muted);
-    cursor: pointer;
-    position: relative;
-    transition: color 0.2s;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .tab-btn.active {
-    color: var(--text);
-  }
-
-  .tab-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 20%;
-    right: 20%;
-    height: 2px;
-    background: var(--highlight);
-    border-radius: 2px;
-  }
-
-  /* ── Tab panels ── */
-  .tab-panel {
-    flex: 1;
-    display: none;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .tab-panel.active { display: flex; }
-
-  /* ── Compass tab ── */
-  .compass-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 1;
-    min-height: 0;
-    padding: 20px 0;
-  }
-
-  .compass-ring { width: 220px; height: 220px; position: relative; margin-bottom: 28px; }
-  .compass-svg { width: 100%; height: 100%; position: absolute; inset: 0; }
-
-  .arrow-container {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .arrow-wrap {
-    width: 72px;
-    height: 72px;
-    transition: transform 0.9s cubic-bezier(0.34, 1.4, 0.64, 1);
-  }
-
-  .distance-display { text-align: center; }
-
-  .distance-number {
-    font-family: 'DM Mono', monospace;
-    font-size: 68px;
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    color: var(--highlight);
-    transition: color 0.3s;
-  }
-
-  .distance-unit {
-    font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 0.3em;
-    margin-top: 2px;
-  }
-
-  /* ── Bottom bar ── */
-  .bottom-bar {
-    padding: 14px 28px calc(20px + env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    background: var(--bg);
-    transition: background 0.3s, border-color 0.3s;
-  }
-
-  .status-info { display: flex; flex-direction: column; gap: 2px; }
-
-  .status-label {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    display: flex;
-    align-items: center;
-  }
-
-  .bearing-text {
-    font-family: 'DM Mono', monospace;
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--text);
-    transition: color 0.3s;
-  }
-
-  .action-btns { display: flex; gap: 8px; }
-
-  .icon-btn {
-    width: 40px;
-    height: 40px;
-    border: 1.5px solid var(--border);
-    background: transparent;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .icon-btn:active { background: var(--border); }
-
-  .reset-btn {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 12px;
-    padding: 10px 18px;
-    border: 1.5px solid var(--accent);
-    background: transparent;
-    color: var(--accent);
-    cursor: pointer;
-    letter-spacing: 0.08em;
-    transition: all 0.15s;
-    border-radius: 4px;
-    -webkit-tap-highlight-color: transparent;
-    height: 40px;
-  }
-
-  .reset-btn:active { background: var(--accent); color: var(--bg); }
-
-  /* ── Settings tab ── */
-  .settings-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px 28px 40px;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .settings-section {
-    margin-bottom: 32px;
-  }
-
-  .settings-section-title {
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .settings-group {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .settings-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-    transition: background 0.3s, border-color 0.3s;
-  }
-
-  .settings-row:last-child { border-bottom: none; }
-
-  .settings-row-label {
-    font-size: 14px;
-    color: var(--text);
-    transition: color 0.3s;
-  }
-
-  .settings-row-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  /* Chip group (horizontal scroll) */
-  .chip-group {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    max-width: 220px;
-  }
-
-  .chip {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    padding: 4px 10px;
-    border: 1.5px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .chip.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg);
-  }
-
-  /* Theme swatches */
-  .theme-swatches {
-    display: flex;
-    gap: 10px;
-  }
-
-  .swatch {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2.5px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .swatch.active {
-    border-color: var(--highlight);
-    transform: scale(1.1);
-  }
-
-  .swatch-warm  { background: #f5f0e8; box-shadow: 0 0 0 1px #c8bfa8; }
-  .swatch-white { background: #ffffff; box-shadow: 0 0 0 1px #e0e0e0; }
-  .swatch-gray  { background: #2a2a2a; box-shadow: 0 0 0 1px #444; }
-
-  /* Compass recal button in settings */
-  .recal-btn-full {
-    width: 100%;
-    padding: 14px 16px;
-    background: transparent;
-    border: none;
-    font-family: 'Noto Serif JP', serif;
-    font-size: 14px;
-    color: var(--highlight);
-    cursor: pointer;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    -webkit-tap-highlight-color: transparent;
-    transition: opacity 0.15s;
-  }
-
-  .recal-btn-full:active { opacity: 0.6; }
-
-  /* ── State screens ── */
-  .state-screen {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 36px;
-    background: var(--bg);
-    z-index: 50;
-    transition: background 0.3s;
-  }
-
-  .state-screen.hidden { display: none; }
-
-  .start-title { font-size: 42px; font-weight: 900; margin-bottom: 20px; letter-spacing: 0.05em; }
-
-  .start-desc {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 2.2;
-    text-align: center;
-    margin-bottom: 48px;
-  }
-
-  .start-desc em { font-style: normal; color: var(--highlight); font-weight: 700; }
-
-  .btn-primary {
-    font-family: 'Noto Serif JP', serif;
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    padding: 18px 52px;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    cursor: pointer;
-    border-radius: 4px;
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.3s, color 0.3s;
-  }
-
-  /* Arrival */
-  .arrival-screen {
-    position: absolute;
-    inset: 0;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 36px;
-    z-index: 40;
-    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    transition: background 0.3s;
-  }
-
-  .arrival-screen.hidden { display: none; }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(40px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .arrival-tag {
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    color: var(--highlight);
-    margin-bottom: 16px;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .arrival-name { font-size: 28px; font-weight: 900; text-align: center; line-height: 1.3; margin-bottom: 6px; }
-  .arrival-type { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-
-  .arrival-coords {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--border);
-    margin-bottom: 40px;
-  }
-
-  .arrival-stats { display: flex; gap: 48px; margin-bottom: 48px; }
-  .stat-item { text-align: center; }
-
-  .stat-value {
-    font-family: 'DM Mono', monospace;
-    font-size: 36px;
-    font-weight: 500;
-    color: var(--highlight);
-    line-height: 1;
-  }
-
-  .stat-label { font-size: 11px; color: var(--muted); letter-spacing: 0.2em; margin-top: 6px; }
-
-  /* Loading */
-  .loading-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.08);
-    backdrop-filter: blur(4px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 45;
-    gap: 16px;
-  }
-
-  .loading-overlay.hidden { display: none; }
-  .loading-text { font-size: 13px; color: var(--muted); letter-spacing: 0.2em; }
-  .loading-dots { display: flex; gap: 8px; }
-
-  .loading-dot {
-    width: 8px; height: 8px;
-    background: var(--muted);
-    border-radius: 50%;
-    animation: loadpulse 1.2s ease-in-out infinite;
-  }
-
-  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
-  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
-
-  @keyframes loadpulse {
-    0%, 100% { opacity: 0.2; transform: scale(0.8); }
-    50%       { opacity: 1;   transform: scale(1); }
-  }
-
-  /* GPS dot */
-  .gps-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #22c55e;
-    display: inline-block;
-    margin-right: 6px;
-    flex-shrink: 0;
-    animation: gpspulse 2s ease-in-out infinite;
-  }
-
-  .gps-dot.inactive { background: var(--border); animation: none; }
-
-  @keyframes gpspulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.3; }
-  }
-
-  .error-msg { font-size: 13px; color: var(--highlight); text-align: center; margin-bottom: 24px; line-height: 1.8; }
-
-  /* Spinner for compass icon */
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinning { animation: spin 0.6s ease forwards; }
+:root{--bg:#f5f6fa;--panel:#fff;--ink:#202431;--muted:#687083;--accent:#7758d8;--line:#e1e4ec}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:18px 22px;background:#25233a;color:white}header h1{font-size:1.25rem;margin:0 0 4px}header p{margin:0;color:#d7d3ed;font-size:.9rem}
+main{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:18px;padding:18px;max-width:1500px;margin:auto}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+h2{font-size:1rem;margin:0 0 12px}h3{font-size:.92rem;margin:18px 0 8px}
+label{display:block;font-size:.88rem;font-weight:650;margin:12px 0 5px}
+input[type=file],select,button,input[type=number]{font:inherit}
+input[type=file]{width:100%;font-size:.82rem}
+select,input[type=number]{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:white}
+button{border:0;border-radius:9px;padding:10px 12px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+button.secondary{background:#eeebfb;color:#4e3a9b}button.neutral{background:#eef0f5;color:#252a37}button.danger{background:#fff0f0;color:#a12f38}
+button:disabled{opacity:.45;cursor:not-allowed}.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.btnrow button{flex:1}
+.small{font-size:.8rem;color:var(--muted);line-height:1.5}.status{padding:9px 10px;background:#f1effc;border-radius:8px;font-size:.82rem;margin-top:10px;line-height:1.45}
+.previewPanel{display:flex;flex-direction:column;gap:12px}.previewTop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#canvasWrap{background:#e9eaf0;border-radius:12px;padding:14px;display:flex;justify-content:center;align-items:flex-start;min-height:300px;overflow:auto}
+canvas{display:block;max-width:100%;height:auto;box-shadow:0 4px 18px #15162a22;background:white;touch-action:none}
+.slotEditor{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.slotTitle{display:flex;justify-content:space-between;align-items:center}
+.slotTitle h3{margin:0 0 6px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.controls label{margin:6px 0 4px;font-weight:550}
+.hint{border-left:3px solid #b3a5f5;padding:8px 10px;background:#f8f6ff;font-size:.8rem;color:#4d4863;line-height:1.5}
+@media(max-width:850px){main{grid-template-columns:1fr;padding:10px}.panel{padding:13px}}
+@media print{body{background:white}header,main .panel:first-child,.previewTop,.noPrint{display:none!important}main{display:block;padding:0;margin:0}.panel{border:0;padding:0}#canvasWrap{padding:0;background:white;overflow:visible;min-height:0}canvas{width:100vw;max-width:none;height:auto;box-shadow:none}}
 </style>
 </head>
 <body>
-<div class="app">
-
-  <!-- ══ Main UI ══ -->
-  <div id="mainUI" style="display:none; flex-direction:column; height:100%;">
-
-    <!-- Tab bar -->
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('compass', this)">コンパス</button>
-      <button class="tab-btn"        onclick="switchTab('settings', this)">設定</button>
-    </div>
-
-    <!-- ── Compass tab ── -->
-    <div class="tab-panel active" id="tab-compass">
-      <div class="compass-area">
-        <div class="compass-ring">
-          <svg class="compass-svg" viewBox="0 0 220 220">
-            <circle cx="110" cy="110" r="104" fill="none" stroke="var(--border)" stroke-width="1"/>
-            <circle cx="110" cy="110" r="88"  fill="none" stroke="var(--border)" stroke-width="0.5" opacity="0.5"/>
-            <circle cx="110" cy="110" r="54"  fill="none" stroke="var(--border)" stroke-width="0.5" opacity="0.5"/>
-            <circle id="progressRing" cx="110" cy="110" r="104"
-                    fill="none" stroke="var(--highlight)" stroke-width="2" stroke-linecap="round"
-                    stroke-dasharray="653" stroke-dashoffset="653"
-                    transform="rotate(-90 110 110)"
-                    style="transition:stroke-dashoffset 1s ease;opacity:.5"/>
-            <g id="tickMarks"></g>
-            <text id="txtN" fill="var(--text)"   font-family="'DM Mono',monospace" font-size="11" text-anchor="middle" dominant-baseline="middle" x="110" y="14"  font-weight="500">N</text>
-            <text id="txtE" fill="var(--muted)"  font-family="'DM Mono',monospace" font-size="9"  text-anchor="middle" dominant-baseline="middle" x="207" y="113">E</text>
-            <text id="txtS" fill="var(--muted)"  font-family="'DM Mono',monospace" font-size="9"  text-anchor="middle" dominant-baseline="middle" x="110" y="210">S</text>
-            <text id="txtW" fill="var(--muted)"  font-family="'DM Mono',monospace" font-size="9"  text-anchor="middle" dominant-baseline="middle" x="13"  y="113">W</text>
-          </svg>
-          <div class="arrow-container">
-            <div class="arrow-wrap" id="arrowWrap">
-              <svg viewBox="0 0 72 72" width="72" height="72">
-                <polygon points="36,6 46,50 36,42 26,50" fill="var(--text)"/>
-                <polygon points="36,66 26,50 36,42 46,50" fill="var(--border)"/>
-                <circle cx="36" cy="36" r="5"   fill="var(--bg)"/>
-                <circle cx="36" cy="36" r="2.5" fill="var(--highlight)"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div class="distance-display">
-          <div class="distance-number" id="distanceNum">—</div>
-          <div class="distance-unit"   id="distanceUnit">km</div>
-        </div>
-      </div>
-
-      <div class="bottom-bar">
-        <div class="status-info">
-          <div class="status-label">
-            <span class="gps-dot inactive" id="gpsDot"></span>
-            <span id="statusLabel">GPS取得中</span>
-          </div>
-          <div class="bearing-text" id="bearingText">—°</div>
-        </div>
-        <div class="action-btns">
-          <button class="icon-btn" id="compassBtn" onclick="recalibrateCompass()" title="コンパス再調整">🧭</button>
-          <button class="reset-btn" onclick="resetDestination()">リセット</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Settings tab ── -->
-    <div class="tab-panel" id="tab-settings">
-      <div class="settings-scroll">
-
-        <!-- 目的地設定 -->
-        <div class="settings-section">
-          <div class="settings-section-title">目的地</div>
-          <div class="settings-group">
-            <div class="settings-row">
-              <div>
-                <div class="settings-row-label">距離</div>
-                <div class="settings-row-sub">目的地までの直線距離</div>
-              </div>
-              <div class="chip-group" id="distChips">
-                <button class="chip active" data-km="0"  onclick="selectDist(this,0)">ランダム</button>
-                <button class="chip"        data-km="1"  onclick="selectDist(this,1)">1km</button>
-                <button class="chip"        data-km="5"  onclick="selectDist(this,5)">5km</button>
-                <button class="chip"        data-km="10" onclick="selectDist(this,10)">10km</button>
-                <button class="chip"        data-km="20" onclick="selectDist(this,20)">20km</button>
-                <button class="chip"        data-km="40" onclick="selectDist(this,40)">40km</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- コンパス設定 -->
-        <div class="settings-section">
-          <div class="settings-section-title">コンパス</div>
-          <div class="settings-group">
-            <div class="settings-row">
-              <div>
-                <div class="settings-row-label">自動再調整</div>
-                <div class="settings-row-sub">方位センサーをリフレッシュする間隔</div>
-              </div>
-              <div class="chip-group" id="intervalChips">
-                <button class="chip active" data-sec="0"  onclick="selectInterval(this,0)">OFF</button>
-                <button class="chip"        data-sec="3"  onclick="selectInterval(this,3)">3秒</button>
-                <button class="chip"        data-sec="5"  onclick="selectInterval(this,5)">5秒</button>
-                <button class="chip"        data-sec="10" onclick="selectInterval(this,10)">10秒</button>
-                <button class="chip"        data-sec="30" onclick="selectInterval(this,30)">30秒</button>
-              </div>
-            </div>
-            <button class="recal-btn-full" onclick="recalibrateCompass()">
-              <span id="recalIcon">🧭</span>
-              今すぐコンパスを再調整
-            </button>
-          </div>
-        </div>
-
-        <!-- 外観 -->
-        <div class="settings-section">
-          <div class="settings-section-title">外観</div>
-          <div class="settings-group">
-            <div class="settings-row">
-              <div>
-                <div class="settings-row-label">テーマ</div>
-              </div>
-              <div class="theme-swatches">
-                <button class="swatch swatch-warm  active" data-theme="warm"  onclick="selectTheme(this,'warm')"  title="ウォーム"></button>
-                <button class="swatch swatch-white"        data-theme="white" onclick="selectTheme(this,'white')" title="ホワイト"></button>
-                <button class="swatch swatch-gray"         data-theme="gray"  onclick="selectTheme(this,'gray')"  title="グレー"></button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-  </div><!-- /mainUI -->
-
-  <!-- ── Start screen ── -->
-  <div class="state-screen" id="startScreen">
-    <div class="start-title">どっか</div>
-    <div class="start-desc">
-      目的地はわからない。<br>
-      矢印と距離だけがわかる。<br>
-      <em>着いてはじめて</em>、<br>
-      どっかがどこかを知る。
-    </div>
-    <button class="btn-primary" onclick="startApp()">はじめる</button>
-  </div>
-
-  <!-- ── Error screen ── -->
-  <div class="state-screen hidden" id="errorScreen">
-    <div style="font-size:40px;margin-bottom:20px">📍</div>
-    <div class="error-msg" id="errorMsg">位置情報の取得に失敗しました。<br>ブラウザの設定を確認してください。</div>
-    <button class="btn-primary" onclick="startApp()">もう一度</button>
-  </div>
-
-  <!-- ── Loading overlay ── -->
-  <div class="loading-overlay hidden" id="loadingOverlay">
-    <div class="loading-dots">
-      <div class="loading-dot"></div>
-      <div class="loading-dot"></div>
-      <div class="loading-dot"></div>
-    </div>
-    <div class="loading-text">目的地を選んでいます</div>
-  </div>
-
-  <!-- ── Arrival screen ── -->
-  <div class="arrival-screen hidden" id="arrivalScreen">
-    <div class="arrival-tag">✓ 到着</div>
-    <div class="arrival-name"   id="arrivalName">—</div>
-    <div class="arrival-type"   id="arrivalType"></div>
-    <div class="arrival-coords" id="arrivalCoords"></div>
-    <div class="arrival-stats">
-      <div class="stat-item">
-        <div class="stat-value" id="statWalked">—</div>
-        <div class="stat-label">移動距離</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="statTrip">#1</div>
-        <div class="stat-label">旅の数</div>
-      </div>
-    </div>
-    <button class="btn-primary" onclick="nextDestination()">次のどっかへ</button>
-  </div>
-
-</div><!-- /app -->
-
+<header><h1>文化祭フォトフレーム</h1><p>写真を配置 → 透過PNGフレームを重ねる → PNG保存 / L判印刷</p></header>
+<main>
+<section class="panel">
+<h2>1. フレームと写真</h2>
+<label for="layout">レイアウト</label>
+<select id="layout">
+  <option value="one">フレームA：写真1枚</option>
+  <option value="two">フレームB：写真2枚（上下）</option>
+</select>
+<label for="frameFile">透過PNGフレーム（任意）</label>
+<input id="frameFile" type="file" accept="image/png,image/webp">
+<div class="small">Photoshopで作った透明部分つきPNGを選択。フレーム画像はキャンバス全体にフィットして重ねます。</div>
+<div id="photoInputs"></div>
+<div class="btnrow">
+  <button id="downloadBtn">完成PNGを保存</button>
+  <button id="printBtn" class="secondary">印刷する</button>
+</div>
+<h3>2. 自動取り込み（対応ブラウザ）</h3>
+<div class="small">NX Tetherの保存先フォルダを選ぶと、新しい写真を定期的に確認します。WindowsのChrome / Edge推奨。最初にフォルダへのアクセス許可が必要です。</div>
+<div class="btnrow">
+  <button id="watchBtn" class="secondary">保存フォルダを選択</button>
+  <button id="stopWatchBtn" class="neutral" disabled>自動確認を停止</button>
+</div>
+<div class="status" id="status" role="status">準備完了。まずフレームと写真を選択してください。</div>
+<h3>3. 操作</h3>
+<div class="hint">プレビュー上の写真をドラッグすると位置調整できます。各写真の「拡大率」でサイズを変更。「中央に戻す」で初期位置に戻ります。写真データはこのブラウザ内で処理し、外部サーバーへ送信しません。</div>
+<div class="btnrow">
+  <button id="resetBtn" class="neutral">写真位置をリセット</button>
+  <button id="clearBtn" class="danger">写真をすべて消去</button>
+</div>
+</section>
+<section class="panel previewPanel">
+<div class="previewTop"><div><h2 style="margin-bottom:3px">プレビュー</h2><div class="small">出力比率はL判（89 × 127 mm）の縦向きです。</div></div><div class="small" id="resolutionLabel">1200 × 1712 px</div></div>
+<div id="canvasWrap"><canvas id="canvas" width="1200" height="1712" aria-label="完成プレビュー"></canvas></div>
+<div class="small">印刷時はプリンター設定で「L判」「用紙に合わせる」などを選んでください。ブラウザやプリンターの設定によって余白が出る場合があります。</div>
+<div id="slotControls"></div>
+</section>
+</main>
 <script>
-  // ── State ──
-  let destination = null;
-  let watchId = null;
-  let currentPos = null;
-  let startPos = null;
-  let lastPos = null;
-  let tripNumber = 1;
-  let totalDistanceTraveled = 0;
-  let selectedKm = 0;
-  let isResetting = false;
-  const ARRIVAL_THRESHOLD = 150;
-  const CIRC = 2 * Math.PI * 104;
-
-  // Orientation
-  let bearingToDestination = 0;
-  let deviceHeading = null;
-  let orientationActive = false;
-  let orientationHandler = null;
-
-  // Auto recal
-  let recalInterval = null;
-  let selectedIntervalSec = 0;
-
-  // ── Persistence ──
-  function saveState() {
-    try {
-      localStorage.setItem('dokka_v2', JSON.stringify({
-        destination, tripNumber, selectedKm, startPos,
-        selectedIntervalSec, theme: currentTheme
-      }));
-    } catch(e) {}
+(() => {
+const W=1200,H=1712;
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+const layoutEl=document.getElementById('layout'),frameInput=document.getElementById('frameFile');
+const photoInputs=document.getElementById('photoInputs'),slotControls=document.getElementById('slotControls');
+const statusEl=document.getElementById('status');
+let frameImg=null,frameUrl=null,watchHandle=null,watchTimer=null,lastSeen=new Set(),drag=null;
+const slots=[
+ {id:0,name:'写真1',rect:{x:0.14,y:0.13,w:0.72,h:0.42},img:null,url:null,scale:1,dx:0,dy:0},
+ {id:1,name:'写真1（上）',rect:{x:0.19,y:0.12,w:0.62,h:0.31},img:null,url:null,scale:1,dx:0,dy:0},
+ {id:2,name:'写真2（下）',rect:{x:0.19,y:0.53,w:0.62,h:0.31},img:null,url:null,scale:1,dx:0,dy:0}
+];
+const activeSlots=()=>layoutEl.value==='one'?[slots[0]]:[slots[1],slots[2]];
+function setStatus(s){statusEl.textContent=s}
+function loadImage(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),im=new Image();im.onload=()=>resolve({img:im,url});im.onerror=reject;im.src=url})}
+function slotForInput(i){return activeSlots()[i]}
+function buildPhotoInputs(){
+ photoInputs.innerHTML='';
+ activeSlots().forEach((s,i)=>{
+  const wrap=document.createElement('div');wrap.className='slotEditor';
+  const lab=document.createElement('label');lab.textContent=s.name+'を読み込む';lab.htmlFor='photo-'+s.id;
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.id='photo-'+s.id;
+  inp.addEventListener('change',async()=>{const f=inp.files&&inp.files[0];if(!f)return;try{const loaded=await loadImage(f);if(s.url)URL.revokeObjectURL(s.url);s.img=loaded.img;s.url=loaded.url;s.scale=1;s.dx=0;s.dy=0;render();setStatus(s.name+'を読み込みました。')}catch(e){setStatus('画像を読み込めませんでした。別の画像を選んでください。')}});
+  wrap.append(lab,inp);photoInputs.append(wrap);
+ });
+ buildSlotControls();
+}
+function buildSlotControls(){
+ slotControls.innerHTML='';
+ activeSlots().forEach(s=>{
+  const wrap=document.createElement('div');wrap.className='slotEditor';
+  const title=document.createElement('div');title.className='slotTitle';
+  const h=document.createElement('h3');h.textContent=s.name+'の調整';
+  const reset=document.createElement('button');reset.className='neutral';reset.textContent='中央に戻す';reset.onclick=()=>{s.scale=1;s.dx=0;s.dy=0;render();updateScaleText(s)};
+  title.append(h,reset);
+  const controls=document.createElement('div');controls.className='controls';
+  const label=document.createElement('label');label.textContent='拡大率：';
+  const range=document.createElement('input');range.type='range';range.min='1';range.max='3';range.step='0.01';range.value=s.scale;range.style.width='100%';
+  const val=document.createElement('div');val.className='small';val.textContent=Math.round(s.scale*100)+'%';
+  range.addEventListener('input',()=>{s.scale=Number(range.value);val.textContent=Math.round(s.scale*100)+'%';render()});
+  label.append(range);
+  controls.append(label,val);wrap.append(title,controls);slotControls.append(wrap);
+ });
+}
+function drawSlot(s){
+ const r=s.rect, x=r.x*W,y=r.y*H,w=r.w*W,h=r.h*H;
+ if(!s.img){ctx.fillStyle='#eeeeF3';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#b7b8c5';ctx.lineWidth=3;ctx.setLineDash([12,8]);ctx.strokeRect(x,y,w,h);ctx.setLineDash([]);ctx.fillStyle='#737687';ctx.font='bold 32px system-ui';ctx.textAlign='center';ctx.fillText('写真を選択',x+w/2,y+h/2);return}
+ const im=s.img,base=Math.max(w/im.width,h/im.height),scale=base*s.scale,iw=im.width*scale,ih=im.height*scale;
+ const cx=x+w/2+s.dx,cy=y+h/2+s.dy;
+ ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(im,cx-iw/2,cy-ih/2,iw,ih);ctx.restore();
+}
+function render(){
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+ activeSlots().forEach(drawSlot);
+ if(frameImg)ctx.drawImage(frameImg,0,0,W,H);
+}
+function updateScaleText(s){const r=slotControls.querySelectorAll('input[type=range]');const i=activeSlots().indexOf(s);if(r[i])r[i].value=s.scale;const vals=slotControls.querySelectorAll('.controls .small');if(vals[i])vals[i].textContent=Math.round(s.scale*100)+'%'}
+layoutEl.addEventListener('change',()=>{buildPhotoInputs();render()});
+frameInput.addEventListener('change',async()=>{const f=frameInput.files&&frameInput.files[0];if(!f)return;try{const loaded=await loadImage(f);if(frameUrl)URL.revokeObjectURL(frameUrl);frameImg=loaded.img;frameUrl=loaded.url;render();setStatus('フレームを読み込みました。')}catch(e){setStatus('フレームを読み込めませんでした。')}});
+canvas.addEventListener('pointerdown',e=>{const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*W/rect.width,y=(e.clientY-rect.top)*H/rect.height;const ss=activeSlots();for(let i=ss.length-1;i>=0;i--){const s=ss[i],r=s.rect;if(x>=r.x*W&&x<=(r.x+r.w)*W&&y>=r.y*H&&y<=(r.y+r.h)*H&&s.img){drag={s,startX:x,startY:y,dx:s.dx,dy:s.dy};canvas.setPointerCapture(e.pointerId);break}}});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*W/rect.width,y=(e.clientY-rect.top)*H/rect.height;drag.s.dx=drag.dx+x-drag.startX;drag.s.dy=drag.dy+y-drag.startY;render()});
+canvas.addEventListener('pointerup',()=>drag=null);canvas.addEventListener('pointercancel',()=>drag=null);
+document.getElementById('resetBtn').onclick=()=>{activeSlots().forEach(s=>{s.scale=1;s.dx=0;s.dy=0;updateScaleText(s)});render();setStatus('写真の位置をリセットしました。')};
+document.getElementById('clearBtn').onclick=()=>{activeSlots().forEach(s=>{if(s.url)URL.revokeObjectURL(s.url);s.img=null;s.url=null;s.scale=1;s.dx=0;s.dy=0});buildPhotoInputs();render();setStatus('表示中のレイアウトの写真を消去しました。')};
+document.getElementById('downloadBtn').onclick=()=>{render();canvas.toBlob(blob=>{if(!blob){setStatus('PNGを書き出せませんでした。');return}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='文化祭フォト_'+new Date().toISOString().replace(/[:.]/g,'-')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);setStatus('完成PNGを保存しました。')},'image/png')};
+document.getElementById('printBtn').onclick=()=>{render();window.print()};
+async function watchFolder(){
+ if(!('showDirectoryPicker' in window)){setStatus('このブラウザはフォルダ自動取り込みに対応していません。Windowsの最新版Chrome / Edgeを使うか、手動読み込みをご利用ください。');return}
+ try{
+  watchHandle=await window.showDirectoryPicker({mode:'read'});
+  const perm=await watchHandle.requestPermission({mode:'read'});
+  if(perm!=='granted'){setStatus('フォルダへのアクセスが許可されませんでした。手動読み込みをご利用ください。');watchHandle=null;return}
+  lastSeen=new Set();await scanFolder(true);
+  watchTimer=setInterval(()=>scanFolder(false),1800);
+  document.getElementById('watchBtn').disabled=true;document.getElementById('stopWatchBtn').disabled=false;
+  setStatus('自動取り込み中です。NX Tetherの保存先フォルダを選択してください。新しい写真を確認しています。');
+ }catch(e){if(e.name!=='AbortError')setStatus('フォルダを開けませんでした。手動読み込みをご利用ください。')}
+}
+async function scanFolder(initial){
+ if(!watchHandle)return;
+ try{
+  const files=[];
+  for await(const [name,handle] of watchHandle.entries()){
+   if(handle.kind==='file'&&/\.(jpe?g|png|webp|bmp)$/i.test(name)){
+    const file=await handle.getFile();files.push({name,handle,file,key:name+'|'+file.size+'|'+file.lastModified});
+   }
   }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem('dokka_v2');
-      if (!raw) return false;
-      const s = JSON.parse(raw);
-      if (!s.destination?.lat || !s.destination?.lng) return false;
-      destination        = s.destination;
-      tripNumber         = s.tripNumber         ?? 1;
-      selectedKm         = s.selectedKm         ?? 0;
-      startPos           = s.startPos           ?? null;
-      selectedIntervalSec= s.selectedIntervalSec?? 0;
-      if (s.theme) applyTheme(s.theme, false);
-      return true;
-    } catch(e) { return false; }
+  files.sort((a,b)=>a.file.lastModified-b.file.lastModified);
+  if(initial){files.forEach(f=>lastSeen.add(f.key));if(files.length)setStatus('保存フォルダを監視中です。既存画像は自動選択せず、新しく追加された画像を待っています。');return}
+  const fresh=files.filter(f=>!lastSeen.has(f.key));
+  fresh.forEach(f=>lastSeen.add(f.key));
+  if(fresh.length){
+   const f=fresh[fresh.length-1];
+   // Add the newest image to the currently active slot that is empty; otherwise use the first slot.
+   const ss=activeSlots(),target=ss.find(s=>!s.img)||ss[0];
+   const loaded=await loadImage(f.file);if(target.url)URL.revokeObjectURL(target.url);
+   target.img=loaded.img;target.url=loaded.url;target.scale=1;target.dx=0;target.dy=0;render();buildSlotControls();
+   setStatus('新しい写真「'+f.name+'」を'+target.name+'に取り込みました。');
   }
-
-  function clearSavedState() {
-    try { localStorage.removeItem('dokka_v2'); } catch(e) {}
-  }
-
-  // ── Geo math ──
-  const toRad = d => d * Math.PI / 180;
-  const toDeg = r => r * 180 / Math.PI;
-
-  function haversine(lat1, lng1, lat2, lng2) {
-    const R = 6371000;
-    const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
-    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  function calcBearing(lat1, lng1, lat2, lng2) {
-    const φ1 = toRad(lat1), φ2 = toRad(lat2), Δλ = toRad(lng2 - lng1);
-    const y = Math.sin(Δλ) * Math.cos(φ2);
-    const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-    return (toDeg(Math.atan2(y, x)) + 360) % 360;
-  }
-
-  function formatDist(m) {
-    return m >= 1000 ? { num: (m/1000).toFixed(1), unit: 'km' } : { num: Math.round(m), unit: 'm' };
-  }
-
-  // ── Compass ticks ──
-  function drawTicks() {
-    const g = document.getElementById('tickMarks');
-    const cx = 110, cy = 110, r = 104;
-    let html = '';
-    for (let i = 0; i < 72; i++) {
-      const a = i * 5 * Math.PI / 180;
-      const isCard = i % 18 === 0, isMaj = i % 9 === 0;
-      const len = isCard ? 10 : isMaj ? 6 : 3;
-      const sw = isCard ? 1.5 : 0.8;
-      const x1 = cx + r * Math.sin(a),       y1 = cy - r * Math.cos(a);
-      const x2 = cx + (r-len) * Math.sin(a), y2 = cy - (r-len) * Math.cos(a);
-      html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--border)" stroke-width="${sw}"/>`;
-    }
-    // Cardinal ticks longer + darker
-    [0,18,36,54].forEach(i => {
-      const a = i * 5 * Math.PI / 180;
-      const x1 = cx + r * Math.sin(a), y1 = cy - r * Math.cos(a);
-      const x2 = cx + (r-10) * Math.sin(a), y2 = cy - (r-10) * Math.cos(a);
-      html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--muted)" stroke-width="1.5"/>`;
-    });
-    g.innerHTML = html;
-  }
-
-  // ── Arrow ──
-  function updateArrow() {
-    let rotation = bearingToDestination;
-    if (orientationActive && deviceHeading !== null) {
-      rotation = bearingToDestination - deviceHeading;
-    }
-    document.getElementById('arrowWrap').style.transform = `rotate(${rotation}deg)`;
-  }
-
-  // ── Tab switching ──
-  function switchTab(name, btn) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + name).classList.add('active');
-  }
-
-  // ── Theme ──
-  let currentTheme = 'warm';
-
-  function applyTheme(theme, save = true) {
-    currentTheme = theme;
-    document.body.classList.remove('theme-white', 'theme-gray');
-    if (theme === 'white') document.body.classList.add('theme-white');
-    if (theme === 'gray')  document.body.classList.add('theme-gray');
-    document.querySelectorAll('.swatch').forEach(s => {
-      s.classList.toggle('active', s.dataset.theme === theme);
-    });
-    if (save) saveState();
-  }
-
-  function selectTheme(btn, theme) { applyTheme(theme); }
-
-  // ── Distance ──
-  function selectDist(btn, km) {
-    selectedKm = km;
-    document.querySelectorAll('#distChips .chip').forEach(b => {
-      b.classList.toggle('active', parseInt(b.dataset.km) === km);
-    });
-    saveState();
-  }
-
-  function syncDistChips() {
-    document.querySelectorAll('#distChips .chip').forEach(b => {
-      b.classList.toggle('active', parseInt(b.dataset.km) === selectedKm);
-    });
-  }
-
-  // ── Interval ──
-  function selectInterval(btn, sec) {
-    selectedIntervalSec = sec;
-    document.querySelectorAll('#intervalChips .chip').forEach(b => {
-      b.classList.toggle('active', parseInt(b.dataset.sec) === sec);
-    });
-    clearInterval(recalInterval);
-    recalInterval = null;
-    if (sec > 0) {
-      recalInterval = setInterval(() => recalibrateCompass(true), sec * 1000);
-    }
-    saveState();
-  }
-
-  function syncIntervalChips() {
-    document.querySelectorAll('#intervalChips .chip').forEach(b => {
-      b.classList.toggle('active', parseInt(b.dataset.sec) === selectedIntervalSec);
-    });
-    if (selectedIntervalSec > 0) {
-      clearInterval(recalInterval);
-      recalInterval = setInterval(() => recalibrateCompass(true), selectedIntervalSec * 1000);
-    }
-  }
-
-  // ── Compass recalibrate ──
-  function recalibrateCompass(silent = false) {
-    if (orientationHandler) {
-      window.removeEventListener('deviceorientation', orientationHandler, true);
-      orientationHandler = null;
-    }
-    deviceHeading = null;
-    orientationActive = false;
-
-    if (!silent) {
-      const icon = document.getElementById('recalIcon');
-      const btn  = document.getElementById('compassBtn');
-      [btn, icon].forEach(el => {
-        if (!el) return;
-        el.classList.add('spinning');
-        setTimeout(() => el.classList.remove('spinning'), 650);
-      });
-      document.getElementById('statusLabel').textContent = '再調整中...';
-    }
-
-    startOrientation();
-  }
-
-  // ── Orientation sensor ──
-  function startOrientation() {
-    orientationHandler = (e) => {
-      if (e.webkitCompassHeading !== undefined) {
-        deviceHeading = e.webkitCompassHeading;
-      } else if (e.alpha !== null) {
-        deviceHeading = (360 - e.alpha) % 360;
-      }
-      orientationActive = true;
-      updateArrow();
-      document.getElementById('statusLabel').textContent = '方位センサー有効';
-    };
-
-    if (typeof DeviceOrientationEvent !== 'undefined' &&
-        typeof DeviceOrientationEvent.requestPermission === 'function') {
-      DeviceOrientationEvent.requestPermission()
-        .then(state => {
-          if (state === 'granted') {
-            window.addEventListener('deviceorientation', orientationHandler, true);
-          }
-        })
-        .catch(console.error);
-    } else if (typeof DeviceOrientationEvent !== 'undefined') {
-      window.addEventListener('deviceorientation', orientationHandler, true);
-    }
-  }
-
-  // ── Claude picks spot ──
-  async function pickDestination(lat, lng, radiusKm) {
-    document.getElementById('loadingOverlay').classList.remove('hidden');
-
-    const actualRadius = radiusKm === 0
-      ? [5, 8, 12, 15][Math.floor(Math.random() * 4)]
-      : radiusKm;
-
-    const prompt = `あなたはナビアプリのバックエンドです。
-現在地: 緯度${lat.toFixed(4)}, 経度${lng.toFixed(4)}
-目的地の条件:
-- 現在地から直線距離で約${actualRadius}km以内
-- 誰でも無料または気軽に立ち寄れる場所（公園、広場、神社・寺、図書館、カフェ、書店、コンビニ、ベーカリー、商店街、観光スポット、海岸、川岸など）
-- 実在するか実在しそうな、具体的な場所名
-
-必ずこのJSON形式のみで返答してください。説明文や\`\`\`は不要です:
-{"name":"場所の名前","type":"種類","lat":緯度の数値,"lng":経度の数値}`;
-
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 200,
-          messages: [{ role: "user", content: prompt }]
-        })
-      });
-      const data = await res.json();
-      const text = (data.content || []).map(c => c.text || '').join('');
-      const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-      if (typeof parsed.lat !== 'number' || typeof parsed.lng !== 'number') throw new Error('bad');
-      if (haversine(lat, lng, parsed.lat, parsed.lng) > actualRadius * 2200) throw new Error('far');
-      document.getElementById('loadingOverlay').classList.add('hidden');
-      return parsed;
-    } catch(e) {
-      document.getElementById('loadingOverlay').classList.add('hidden');
-      const angle = Math.random() * 2 * Math.PI;
-      const frac = 0.6 + Math.random() * 0.4;
-      return {
-        name: "どこか", type: "不明",
-        lat: lat + (actualRadius * frac / 111.32) * Math.cos(angle),
-        lng: lng + (actualRadius * frac / (111.32 * Math.cos(toRad(lat)))) * Math.sin(angle)
-      };
-    }
-  }
-
-  // ── GPS update ──
-  function updateUI(pos) {
-    const { latitude, longitude } = pos.coords;
-    currentPos = { lat: latitude, lng: longitude };
-
-    document.getElementById('gpsDot').classList.remove('inactive');
-    document.getElementById('statusLabel').textContent =
-      orientationActive ? '方位センサー有効' : '追跡中';
-
-    if (!destination || isResetting) return;
-
-    const dist = haversine(latitude, longitude, destination.lat, destination.lng);
-    const bear = calcBearing(latitude, longitude, destination.lat, destination.lng);
-    bearingToDestination = bear;
-    updateArrow();
-
-    const { num, unit } = formatDist(dist);
-    document.getElementById('distanceNum').textContent  = num;
-    document.getElementById('distanceUnit').textContent = unit;
-    document.getElementById('bearingText').textContent  = `${Math.round(bear)}°`;
-
-    if (startPos) {
-      const startDist = haversine(startPos.lat, startPos.lng, destination.lat, destination.lng);
-      const progress  = Math.max(0, Math.min(1, 1 - dist / startDist));
-      document.getElementById('progressRing').style.strokeDashoffset = (CIRC * (1 - progress)).toFixed(1);
-    }
-
-    if (lastPos) totalDistanceTraveled += haversine(lastPos.lat, lastPos.lng, latitude, longitude);
-    lastPos = { lat: latitude, lng: longitude };
-
-    if (dist <= ARRIVAL_THRESHOLD) showArrival();
-  }
-
-  // ── Arrival ──
-  function showArrival() {
-    if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-    clearSavedState();
-    document.getElementById('arrivalName').textContent   = destination.name;
-    document.getElementById('arrivalType').textContent   = destination.type || '';
-    document.getElementById('arrivalCoords').textContent =
-      `${destination.lat.toFixed(5)}, ${destination.lng.toFixed(5)}`;
-    const { num, unit } = formatDist(totalDistanceTraveled);
-    document.getElementById('statWalked').textContent = `${num}${unit}`;
-    document.getElementById('statTrip').textContent   = `#${tripNumber}`;
-    document.getElementById('arrivalScreen').classList.remove('hidden');
-  }
-
-  // ── Next destination ──
-  async function nextDestination() {
-    document.getElementById('arrivalScreen').classList.add('hidden');
-    tripNumber++;
-    totalDistanceTraveled = 0;
-    lastPos = currentPos ? { ...currentPos } : null;
-    document.getElementById('progressRing').style.strokeDashoffset = CIRC.toFixed(1);
-    if (currentPos) {
-      destination = await pickDestination(currentPos.lat, currentPos.lng, selectedKm);
-      startPos = { ...currentPos };
-      saveState();
-      startTracking();
-    }
-  }
-
-  // ── Reset ──
-  async function resetDestination() {
-    isResetting = true;
-    if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-    totalDistanceTraveled = 0;
-    document.getElementById('progressRing').style.strokeDashoffset = CIRC.toFixed(1);
-    document.getElementById('distanceNum').textContent   = '—';
-    document.getElementById('bearingText').textContent   = '—°';
-    document.getElementById('arrowWrap').style.transform = 'rotate(0deg)';
-    if (currentPos) {
-      destination = await pickDestination(currentPos.lat, currentPos.lng, selectedKm);
-      startPos = lastPos = { ...currentPos };
-      saveState();
-      isResetting = false;
-      startTracking();
-    } else {
-      isResetting = false;
-    }
-  }
-
-  // ── GPS watch ──
-  function startTracking() {
-    if (watchId) navigator.geolocation.clearWatch(watchId);
-    watchId = navigator.geolocation.watchPosition(
-      updateUI,
-      () => {
-        document.getElementById('statusLabel').textContent = 'GPS不安定';
-        document.getElementById('gpsDot').classList.add('inactive');
-      },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
-    );
-  }
-
-  // ── Start ──
-  async function startApp() {
-    document.getElementById('startScreen').classList.add('hidden');
-    document.getElementById('errorScreen').classList.add('hidden');
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        currentPos = lastPos = { lat: latitude, lng: longitude };
-
-        document.getElementById('mainUI').style.display = 'flex';
-        drawTicks();
-        startOrientation();
-
-        if (loadState()) {
-          syncDistChips();
-          syncIntervalChips();
-          if (!startPos) startPos = { ...currentPos };
-          startTracking();
-        } else {
-          startPos    = { ...currentPos };
-          destination = await pickDestination(latitude, longitude, selectedKm);
-          saveState();
-          startTracking();
-        }
-      },
-      (err) => {
-        document.getElementById('errorMsg').textContent =
-          err.code === 1
-            ? '位置情報のアクセスが拒否されました。\nブラウザ設定から許可してください。'
-            : 'GPS取得に失敗しました。もう一度お試しください。';
-        document.getElementById('errorScreen').classList.remove('hidden');
-      },
-      { enableHighAccuracy: true, timeout: 20000 }
-    );
-  }
-
-  drawTicks();
+ }catch(e){setStatus('フォルダの確認に失敗しました。アクセス許可を確認するか、手動読み込みをご利用ください。')}
+}
+document.getElementById('watchBtn').onclick=watchFolder;
+document.getElementById('stopWatchBtn').onclick=()=>{if(watchTimer)clearInterval(watchTimer);watchTimer=null;watchHandle=null;document.getElementById('watchBtn').disabled=false;document.getElementById('stopWatchBtn').disabled=true;setStatus('自動取り込みを停止しました。')};
+buildPhotoInputs();render();
+})();
 </script>
 </body>
 </html>
